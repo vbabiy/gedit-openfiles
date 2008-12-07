@@ -2,22 +2,10 @@ import gedit
 from FileMonitor import FileMonitor
 from DBWrapper import DBWrapper
 
-menu_str="""
-<ui>
-    <menubar name="MenuBar">
-        <menu name="FileMenu" action="File">
-            <placeholder name="FileOps_1">
-                <menuitem name="Open File" action="SnapOpenAction"/>
-           </placeholder>
-        </menu>
-    </menubar>
-</ui>
-"""
-
 
 class GeditOpenFile(gedit.Plugin):
 
-    def __init__(self):
+    def __init__(self, plugin, window):
         # Create DB Wrapper and start the thread
         self._db_wrapper = DBWrapper()
         self._file_monitor = FileMonitor(self._db_wrapper, ".")

@@ -14,6 +14,7 @@ from threading import Thread
 
 EVENT_MASK = EventsCodes.IN_DELETE | EventsCodes.IN_CREATE | EventsCodes.IN_MOVED_TO | EventsCodes.IN_MOVED_FROM # watched events
 
+
 class FileMonitor(object):
     """
     FileMonitor Class keeps track of all files down a tree starting at the root
@@ -36,6 +37,7 @@ class FileMonitor(object):
         Starts a WalkDirectoryThread to add the directory
         """
         WalkDirectoryThread(self._db_wrapper, self._root)
+
 
 class WalkDirectoryThread(Thread):
     """
@@ -77,6 +79,7 @@ class WalkDirectoryThread(Thread):
 
 
 class FileProcessEvent(ProcessEvent):
+
     def __init__(self, db_wrapper):
         self._db_wrapper = db_wrapper
 

@@ -2,7 +2,7 @@
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!--*- mode: xml -*-->
 <glade-interface>
-  <widget class="GtkWindow" id="SnapOpenWindow">
+  <widget class="GtkWindow" id="gedit_openfiles_window">
     <property name="width_request">680</property>
     <property name="height_request">380</property>
     <property name="border_width">4</property>
@@ -18,7 +18,7 @@
           <widget class="GtkHBox" id="query_hbox">
             <property name="visible">True</property>
             <child>
-              <widget class="GtkEntry" id="entry_name">
+              <widget class="GtkEntry" id="file_query">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
@@ -67,7 +67,7 @@
             <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="shadow_type">GTK_SHADOW_IN</property>
             <child>
-              <widget class="GtkTreeView" id="hit_list">
+              <widget class="GtkTreeView" id="file_list">
                 <property name="width_request">500</property>
                 <property name="height_request">200</property>
                 <property name="visible">True</property>
@@ -86,7 +86,7 @@
             <property name="spacing">2</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
             <child>
-              <widget class="GtkButton" id="ok_button">
+              <widget class="GtkButton" id="open_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
