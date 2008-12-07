@@ -4,6 +4,7 @@ import sqlite3
 from Logger import log
 import os
 
+
 class DBWrapper(Thread):
     """
     Class to wrap the python sqlite3 module to support mulit threading
@@ -58,11 +59,12 @@ class DBWrapper(Thread):
 
     def add_file(self, path, name):
         log.debug("Adding File: " + os.path.join(path, name))
-        self.execute("INSERT INTO files (name, path) VALUES ('%s', '%s')", (name, path))
+        self.execute("INSERT INTO files (name, path) VALUES ('%s', '%s')",
+            (name, path))
 
     def remove_file(self, path):
         log.debug("Removing File: " + path)
-        self.execute("DELETE FROM files where path = '%s'", (path,))
+        self.execute("DELETE FROM files where path = '%s'", (path, ))
 
 if __name__ == '__main__':
     db = DBWrapper()
