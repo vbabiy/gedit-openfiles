@@ -1,0 +1,2 @@
+class GeditOpenGui(object):
+    pass
