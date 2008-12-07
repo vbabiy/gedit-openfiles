@@ -8,7 +8,11 @@ File Monitor Contains
 """
 import os
 import stat
+from pyinotify import WatchManager, Notifier, ThreadedNotifier, EventsCodes, ProcessEvent
+from Logger import log
+from threading import Thread
 
+MASK = EventsCodes.IN_DELETE | EventsCodes.IN_CREATE | EventsCodes.IN_MOVED_TO | EventsCodes.IN_MOVED_FROM # watched events
 
 class FileMonitor(object):
     """
@@ -19,6 +23,11 @@ class FileMonitor(object):
         self._db_wrapper = db_wrapper
         self._root = root
 
+        # Add a watch to the root of the dir
+        self._watch_manager = WatchManager()
+        self._notifier = ThreadedNotifier(self._watch_manager, FileProcessEvent(self._db_wrapper)).start()
+        self._watch_manager.add_watch(self._root, MASK, rec=True, auto_add=True)
+
         # initial walk
         self.add_dir()
 
@@ -27,15 +36,6 @@ class FileMonitor(object):
         Starts a WalkDirectoryThread to add the directory
         """
         WalkDirectoryThread(self._db_wrapper, self._root)
-
-    def remove_dir(self):
-        """
-        Remove a directory from the watch
-        """
-        pass
-
-from threading import Thread
-
 
 class WalkDirectoryThread(Thread):
     """
@@ -74,6 +74,31 @@ class WalkDirectoryThread(Thread):
                     os.path.join(root, name)):
                     yield newroot, children
         yield root, names
+
+
+class FileProcessEvent(ProcessEvent):
+    def __init__(self, db_wrapper):
+        self._db_wrapper = db_wrapper
+
+    def process_IN_CREATE(self, event):
+        path = os.path.join(event.path, event.name)
+        log.info("[FileProcessEvent] CREATED: " + path)
+        self._db_wrapper.add_file(event.path, event.name)
+
+    def process_IN_DELETE(self, event):
+        path = os.path.join(event.path, event.name)
+        log.info("[FileProcessEvent] DELETED: " + path)
+        self._db_wrapper.remove_file(event.path, event.name)
+
+    def process_IN_MOVED_FROM(self, event):
+        path = os.path.join(event.path, event.name)
+        log.info("[FileProcessEvent] MOVED_FROM: " + path)
+        self.process_IN_DELETE(event)
+
+    def process_IN_MOVED_TO(self, event):
+        path = os.path.join(event.path, event.name)
+        log.info("[FileProcessEvent] MOVED_TO: " + path)
+        self.process_IN_CREATE(event)
 
 
 if __name__ == '__main__':

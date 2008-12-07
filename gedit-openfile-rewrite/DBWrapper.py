@@ -58,12 +58,13 @@ class DBWrapper(Thread):
             "open_count INTEGER DEFAULT 0)")
 
     def add_file(self, path, name):
-        log.debug("Adding File: " + os.path.join(path, name))
+        log.debug("[DBWrapper] Adding File: " + os.path.join(path, name))
         self.execute("INSERT INTO files (name, path) VALUES ('%s', '%s')",
             (name, path))
 
-    def remove_file(self, path):
-        log.debug("Removing File: " + path)
+    def remove_file(self, path, name):
+        path = os.path.join(path, name)
+        log.debug("[DBWrapper] Removing File: " + path)
         self.execute("DELETE FROM files where path = '%s'", (path, ))
 
 if __name__ == '__main__':
