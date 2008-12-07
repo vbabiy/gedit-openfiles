@@ -22,7 +22,7 @@ class GeditOpenGui(object):
         # Get Builder and get xml file
         self._builder = gtk.Builder()
         self._builder.add_from_file(os.path.join(os.path.dirname(__file__),
-             "geditopenfiles_gtk.xml"))
+             "gui", "geditopenfiles_gtk.xml"))
 
         #setup window
         self._plugin_window = self._builder.get_object("gedit_openfiles_window")
@@ -60,7 +60,7 @@ class GeditOpenGui(object):
         # Add Animation icon for building data
         building_data_spinner = self._builder.get_object('spinner')
         building_data_spinner.set_from_animation(gtk.gdk.PixbufAnimation(
-            os.path.join(os.path.dirname(__file__), "progress.gif")))
+            os.path.join(os.path.dirname(__file__), "gui", "progress.gif")))
         self._building_data_spinner_box = self._builder.get_object('spinner_box')
 
     def _insert_menu(self):
