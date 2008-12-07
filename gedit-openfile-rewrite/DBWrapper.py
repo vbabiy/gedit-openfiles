@@ -1,13 +1,17 @@
-from threading import Thread
-from Queue import Queue
+"""
+Provides the DBWrapper Class which currently wraps sqlite in order to provide
+some abstractions an multithreading support.
+"""
+import os
 import sqlite3
 from Logger import log
-import os
+from threading import Thread
+from Queue import Queue
 
 
 class DBWrapper(Thread):
     """
-    Class to wrap the python sqlite3 module to support mulit threading
+    Class to wrap the python sqlite3 module to support multithreading
     """
 
     def __init__(self):

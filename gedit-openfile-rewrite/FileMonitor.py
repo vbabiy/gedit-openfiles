@@ -8,11 +8,11 @@ File Monitor Contains
 """
 import os
 import stat
-from pyinotify import WatchManager, Notifier, ThreadedNotifier, EventsCodes, ProcessEvent
 from Logger import log
+from pyinotify import WatchManager, Notifier, ThreadedNotifier, EventsCodes, ProcessEvent
 from threading import Thread
 
-MASK = EventsCodes.IN_DELETE | EventsCodes.IN_CREATE | EventsCodes.IN_MOVED_TO | EventsCodes.IN_MOVED_FROM # watched events
+EVENT_MASK = EventsCodes.IN_DELETE | EventsCodes.IN_CREATE | EventsCodes.IN_MOVED_TO | EventsCodes.IN_MOVED_FROM # watched events
 
 class FileMonitor(object):
     """
@@ -26,7 +26,7 @@ class FileMonitor(object):
         # Add a watch to the root of the dir
         self._watch_manager = WatchManager()
         self._notifier = ThreadedNotifier(self._watch_manager, FileProcessEvent(self._db_wrapper)).start()
-        self._watch_manager.add_watch(self._root, MASK, rec=True, auto_add=True)
+        self._watch_manager.add_watch(self._root, EVENT_MASK, rec=True, auto_add=True)
 
         # initial walk
         self.add_dir()
