@@ -1,12 +1,14 @@
 import gtk
 import os
+from Logger import log
+import gedit
 
 menu_str="""
 <ui>
     <menubar name="MenuBar">
         <menu name="FileMenu" action="File">
             <placeholder name="FileOps_1">
-                <menuitem name="Open File" action="SnapOpenAction"/>
+                <menuitem name="Open File" action="GeditOpenFileMenuAction"/>
            </placeholder>
         </menu>
     </menubar>
@@ -14,10 +16,12 @@ menu_str="""
 """
 
 
-class GeditOpenGui(object):
+class GeditOpenFileGui(object):
 
-    def __init__(self, plugin, window):
+    def __init__(self, plugin, window, db_wrapper):
+        self._plugin = plugin
         self._window = window
+        self._db_wrapper = db_wrapper
 
         # Get Builder and get xml file
         self._builder = gtk.Builder()
@@ -26,8 +30,11 @@ class GeditOpenGui(object):
 
         #setup window
         self._plugin_window = self._builder.get_object("gedit_openfiles_window")
-        self._plugin_window.connect("key-release-event", self._on_key_release)
         self._plugin_window.set_transient_for(self._window)
+        
+        # Callbacks
+        self._plugin_window.connect("key-release-event", self._on_window_release)
+        self._plugin_window.connect("delete_event", self._plugin_window_delete_event)
 
         #setup buttons
         self._builder.get_object("open_button").connect("clicked",
@@ -62,21 +69,94 @@ class GeditOpenGui(object):
         building_data_spinner.set_from_animation(gtk.gdk.PixbufAnimation(
             os.path.join(os.path.dirname(__file__), "gui", "progress.gif")))
         self._building_data_spinner_box = self._builder.get_object('spinner_box')
+        
+        # Set encoding
+        self._encoding = gedit.encoding_get_current()
+        self._insert_menu()
+        
+    def _plugin_window_delete_event(self, window, event):
+        """
+        Method used to is trigger when the x is click on the window, it will not
+        destroy the window only hide it.
+        """
+        self._plugin_window.hide()
+        return True
+        
+    def update_ui(self):
+        log.error("[GeditOpenFileGui] update_ui METHOD NOT IMPLEMENTED")
 
+    #TODO refactor and reivew code. To make sure its not doing more work then is needed.
     def _insert_menu(self):
-        pass
+        manager = self._window.get_ui_manager()
+        self._action_group = gtk.ActionGroup( "GeditOpenFileAction" )
+        plugin_menu_action = gtk.Action( name="GeditOpenFileAction", label="Open", tooltip="Gedit Open File(s) tools", stock_id=None )
+        self._action_group.add_action( plugin_menu_action )
+        
+        geditopenfiles_action = gtk.Action( name="GeditOpenFileMenuAction", label="Open File(s)...\t", tooltip="Open a file(s)", stock_id=gtk.STOCK_OPEN )
+        geditopenfiles_action.connect( "activate", lambda a: self.on_geditopen_action())
+        self._action_group.add_action_with_accel( geditopenfiles_action, "<Ctrl><Alt>o" )
+        manager.insert_action_group( self._action_group, 0 )
+        
+        self._ui_id = manager.new_merge_id()
+        
+        manager.add_ui_from_string( menu_str )
+        manager.ensure_update()
 
-    def _on_key_release(self, event):
-        pass
+    def _on_window_release(self, widget, event):
+        log.error("_on_key_release METHOD NOT DEFINED")
+        if event.keyval == gtk.keysyms.Escape:
+            self._plugin_window.hide()
 
-    def _on_query_entry(self, event):
-        pass
+    def _on_query_entry(self, widget, event):
+        self._clear_treeveiw() # Remove all 
+        
+        input_query = widget.get_text()
+        log.debug(" [GeditOpenFileGui] input_query : %s" % input_query)
+        
+        if input_query:
+            # Query database based on input
+            results = self._db_wrapper.select_on_filename(input_query)
+            self._insert_into_treeview(results)
+        log.error("_on_query_entry METHOD NOT DEFINED")
+        
+    def _insert_into_treeview(self, file_list):
+        for file in file_list:
+            self._liststore.append([file.path, file.uri])
+            
+    def _clear_treeveiw(self):
+        self._liststore.clear()
+        
+    def _open_file(self, uri):
+        # Check to make sure file is not allready opened
+        tab = self._window.get_tab_from_uri(uri)
+        if not tab:
+            # if not createa tab.
+            tab = self._window.create_tab_from_uri( uri, self._encoding, 0, False, False )
+        self._window.set_active_tab( tab )
 
-    def _on_select_from_list(self, event):
-        pass
+    def _foreach(self, model, path, iter, selected):
+        """
+        Populates selected list
+        """
+        selected.append(model.get_value(iter, 1))
 
-    def _on_list_mouse(self, event):
-        pass
+    def _on_select_from_list(self, widget, event):
+        # Populate the list of file paths
+        selected = []
+        self._file_list.get_selection().selected_foreach(self._foreach, selected)
+        for selected_file in selected:
+            # Open File
+            self._open_file ( selected_file )
+
+        # Hide the window
+        self._plugin_window.hide()
+
+    def _on_list_mouse(self, widget, event):
+        log.error("_on_list_mouse METHOD NOT DEFINED")
+    
+    def on_geditopen_action(self):
+        self._plugin_window.show()
+        self._file_query.grab_focus()
 
     def open_selected_item(self):
-        pass
+        log.error("open_selected_item METHOD NOT DEFINED")
