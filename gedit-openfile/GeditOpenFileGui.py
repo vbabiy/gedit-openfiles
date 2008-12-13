@@ -18,10 +18,10 @@ menu_str="""
 
 class GeditOpenFileGui(object):
 
-    def __init__(self, plugin, window, db_wrapper):
+    def __init__(self, plugin, window, file_monitor):
         self._plugin = plugin
         self._window = window
-        self._db_wrapper = db_wrapper
+        self._file_monitor = file_monitor
 
         # Get Builder and get xml file
         self._builder = gtk.Builder()
@@ -115,13 +115,12 @@ class GeditOpenFileGui(object):
         
         if input_query:
             # Query database based on input
-            results = self._db_wrapper.select_on_filename(input_query)
+            results = self._file_monitor.search_for_files(input_query)
             self._insert_into_treeview(results)
-        log.error("_on_query_entry METHOD NOT DEFINED")
         
     def _insert_into_treeview(self, file_list):
         for file in file_list:
-            self._liststore.append([file.path, file.uri])
+            self._liststore.append([file.display_path, file.uri])
             
     def _clear_treeveiw(self):
         self._liststore.clear()

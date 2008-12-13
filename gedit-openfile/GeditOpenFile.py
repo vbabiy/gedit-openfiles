@@ -13,7 +13,8 @@ class GeditOpenFile(Plugin):
 
         # Create DB Wrapper and start the thread
         self._db_wrapper = DBWrapper()
-        #TODO Gett Root from file_browser
+        
+        #TODO Get Root from file_browser
         self._file_monitor = FileMonitor(self._db_wrapper, ".")
 
     def _get_instance( self, window ):
@@ -24,7 +25,7 @@ class GeditOpenFile(Plugin):
 
     def activate( self, window ):
         log.debug("[GeditOpenFile] Activate")
-        self._set_instance( window, GeditOpenFileGui(self, window, self._db_wrapper))
+        self._set_instance( window, GeditOpenFileGui(self, window, self._file_monitor))
 
     def deactivate( self, window ):
         self._get_instance( window ).deactivate()

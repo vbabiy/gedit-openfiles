@@ -46,7 +46,23 @@ class FileMonitor(object):
 
     def remove_dir(self, path):
         self._db_wrapper.remove_dir(path)
+    
+    def _validate_file_query_input(self, name):
+        if name.find("%") > -1:
+            return False
+        return True 
+    
+    def search_for_files(self, name):
+        res_filewrappers = []
+        if self._validate_file_query_input(name):
+            path_name = self._root + "%" + name
+            for row in self._db_wrapper.select_on_filename(path_name):
+                res_filewrappers.append(FileWrapper(name, self._root, row[0], row[1]))
+        
+        #Sort Results
+        res_filewrappers.sort(lambda x, y: cmp(x.path, y.path))
 
+        return res_filewrappers
 
 class WalkDirectoryThread(Thread):
     """
@@ -68,7 +84,9 @@ class WalkDirectoryThread(Thread):
         if os.path.isdir(self._root):
             for (path, names) in self._walk_file_system(self._root):
                 for name in names:
-                    self._db_wrapper.add_file(path, name)
+                    # Check to see if it is a dir
+                    if not os.path.isdir(os.path.join(path,name)):
+                        self._db_wrapper.add_file(path, name)
 
     def _walk_file_system(self, root):
         """
@@ -123,10 +141,11 @@ class FileProcessEvent(ProcessEvent):
         self.process_IN_CREATE(event)
 
 class FileWrapper(object):
-    def __init__(self, query_input, name, path):
+    def __init__(self, query_input, root, name, path):
         self._path = path
         self._name = name
-        sefl._query_input = query_input
+        self._query_input = query_input
+        self._root = root
     
     def _get_path(self):
         return self._path
@@ -137,7 +156,26 @@ class FileWrapper(object):
         return uri
     uri = property(_get_uri)
     
-    def _get_highlighted_path():
+    def _get_display_path(self):
+        return self.highlight_pattern(self.path)
+    display_path = property(_get_display_path)
+    
+    def highlight_pattern(self, path):
+        path = path.replace(self._root + "/", "") # Relative path
+        log.debug("[FileWrapper] path = " + path)
+        query_list = self._query_input.split(" ")
+
+        last_postion = 0
+        for word in query_list:
+            location = path.lower().find(word, last_postion)
+            last_postion = (location + len(word) + 2)
+            a_path = list(path)
+            a_path.insert(location, "<b>")
+            a_path.insert(last_postion - 1, "</b>")
+            path = "".join(a_path)
+            
+        log.debug("[FileWrapper] Markup Path = " + path)
+        return path
         
 
 

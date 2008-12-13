@@ -7,7 +7,6 @@ import sqlite3
 from Logger import log
 from threading import Thread
 from Queue import Queue
-from FileMonitor import FileWrapper
 
 
 class DBWrapper(Thread):
@@ -65,12 +64,10 @@ class DBWrapper(Thread):
     
     def select_on_filename(self, query_input):
         log.info("[DBWrapper] select_on_filename method")
-        query_param = "%"+query_input.replace(" ", "%")+"%"
-        results = []
-        res = self.select("SELECT name, path FROM files WHERE path LIKE '%s' LIMIT 51", query_param)
+        query_param = query_input.replace(" ", "%")+"%"
+        res = self.select("SELECT DISTINCT name, path FROM files WHERE path LIKE '%s' LIMIT 101", query_param)
         for row in res:
-            results.append(FileWrapper(query_input, row[0], row[1]))
-        return results
+            yield row
 
     def close(self):
         self._queue.put("__CLOSE__")
