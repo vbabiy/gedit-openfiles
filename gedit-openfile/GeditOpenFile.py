@@ -3,6 +3,7 @@ from FileMonitor import FileMonitor
 from DBWrapper import DBWrapper
 from GeditOpenFileGui import GeditOpenFileGui
 from Logger import log
+from Config import Config
 
 
 class GeditOpenFile(Plugin):
@@ -16,6 +17,7 @@ class GeditOpenFile(Plugin):
         
         #TODO Get Root from file_browser
         self._file_monitor = FileMonitor(self._db_wrapper, ".")
+        self._config = Config()
 
     def _get_instance( self, window ):
         return window.get_data( self.DATA_TAG )
@@ -25,7 +27,7 @@ class GeditOpenFile(Plugin):
 
     def activate( self, window ):
         log.debug("[GeditOpenFile] Activate")
-        self._set_instance( window, GeditOpenFileGui(self, window, self._file_monitor))
+        self._set_instance( window, GeditOpenFileGui(self, window, self._file_monitor, self._config))
 
     def deactivate( self, window ):
         self._get_instance( window ).deactivate()

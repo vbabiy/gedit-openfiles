@@ -18,10 +18,11 @@ menu_str="""
 
 class GeditOpenFileGui(object):
 
-    def __init__(self, plugin, window, file_monitor):
+    def __init__(self, plugin, window, file_monitor, config):
         self._plugin = plugin
         self._window = window
         self._file_monitor = file_monitor
+        self._config = config
 
         # Get Builder and get xml file
         self._builder = gtk.Builder()
