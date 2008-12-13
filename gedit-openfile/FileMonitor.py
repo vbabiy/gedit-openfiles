@@ -163,16 +163,18 @@ class FileWrapper(object):
     def highlight_pattern(self, path):
         path = path.replace(self._root + "/", "") # Relative path
         log.debug("[FileWrapper] path = " + path)
-        query_list = self._query_input.split(" ")
+        query_list = self._query_input.lower().split(" ")
 
         last_postion = 0
         for word in query_list:
             location = path.lower().find(word, last_postion)
-            last_postion = (location + len(word) + 2)
-            a_path = list(path)
-            a_path.insert(location, "<b>")
-            a_path.insert(last_postion - 1, "</b>")
-            path = "".join(a_path)
+            log.debug("Found Postion = " + str(location))
+            if location > -1:
+                last_postion = (location + len(word) + 3)
+                a_path = list(path)
+                a_path.insert(location, "<b>")
+                a_path.insert(location + len(word) + 1, "</b>")
+                path = "".join(a_path)
             
         log.debug("[FileWrapper] Markup Path = " + path)
         return path
