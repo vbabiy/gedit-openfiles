@@ -32,6 +32,7 @@ class GeditOpenFileGui(object):
         #setup window
         self._plugin_window = self._builder.get_object("gedit_openfiles_window")
         self._plugin_window.set_transient_for(self._window)
+        self._notebook = self._builder.get_object('notebook')
         
         # Callbacks
         self._plugin_window.connect("key-release-event", self._on_window_release)
@@ -71,9 +72,63 @@ class GeditOpenFileGui(object):
             os.path.join(os.path.dirname(__file__), "gui", "progress.gif")))
         self._building_data_spinner_box = self._builder.get_object('spinner_box')
         
+        # Setup Configuration Tab
+        self._notebook = self._builder.get_object("notebook")
+        self._file_browser_checkbox = self._builder.get_object("file_browser_checkbox")
+        self._file_browser_checkbox.connect("toggled", self._file_browser_checkbox_event)
+        self._open_root_hbox = self._builder.get_object("open_root_hbox")
+        self._open_root_path = self._builder.get_object("open_root_path")
+        self._config_ignore_input = self._builder.get_object("config_ignore_input")
+        
+        self._reset_config()
+        
+        # Connect the OK Button the config tab
+        self._builder.get_object("config_save_button").connect("clicked", self._save_config_event)
+        self._builder.get_object("config_cancel_button").connect("clicked", self._cancel_config_event)
+        self._builder.get_object("config_refresh_button").connect("clicked", self._refresh_data)
+        
+        use_file_browser = self._config.get_value("USE_FILEBROWSER")
+        if use_file_browser == True or use_file_browser == None: # Defualt
+            self._open_root_hbox.set_sensitive(False)
+        else:
+            self._open_root_hbox.set_sensitive(True)
+        
         # Set encoding
         self._encoding = gedit.encoding_get_current()
         self._insert_menu()
+    
+    def _refresh_data(self, event):
+        self._file_monitor.refresh_database()
+        self._plugin_window.hide()
+        
+    def _reset_config(self):
+        if self._config.get_value("USE_FILEBROWSER"):
+            self._file_browser_checkbox.set_active(True)
+        else:
+            self._file_browser_checkbox.set_active(False)
+        log.debug("IGNORE_FILE_FILETYPES = " + str(self._config.get_value("IGNORE_FILE_FILETYPES")))
+        log.debug("TYPE = " + str(type(self._config.get_value("IGNORE_FILE_FILETYPES"))))
+        self._config_ignore_input.set_text(", ".join(self._config.get_value("IGNORE_FILE_FILETYPES")))
+    
+    def _cancel_config_event(self, event):
+        self._reset_config()
+        self._plugin_window.hide()        
+        
+    def _save_config_event(self, event):
+        self._config.set_value("USE_FILEBROWSER", self._file_browser_checkbox.get_active())
+        ignored_list = [s.strip() for s in self._config_ignore_input.get_text().split(",")]
+        log.debug("ignored_list = " + str(ignored_list))
+        self._config.set_value("IGNORE_FILE_FILETYPES", ignored_list)
+        self._file_monitor.set_root_path(self._config.root_path())
+        self._file_monitor.refresh_database()
+        self._plugin_window.hide()
+    
+    def _file_browser_checkbox_event(self, widget):
+        if widget.get_active():
+            self._open_root_hbox.set_sensitive(False)
+        else:
+            self._open_root_hbox.set_sensitive(True)
+            
         
     def _plugin_window_delete_event(self, window, event):
         """
@@ -104,9 +159,10 @@ class GeditOpenFileGui(object):
         manager.ensure_update()
 
     def _on_window_release(self, widget, event):
-        log.error("_on_key_release METHOD NOT DEFINED")
         if event.keyval == gtk.keysyms.Escape:
             self._plugin_window.hide()
+        elif event.keyval == gtk.keysyms.Down:
+            log.debug("DOWN WAS PRESSED")
 
     def _on_query_entry(self, widget, event):
         self._clear_treeveiw() # Remove all 
@@ -156,7 +212,10 @@ class GeditOpenFileGui(object):
     
     def on_geditopen_action(self):
         self._plugin_window.show()
+        self._notebook.set_current_page(0) # Set back to the search page
         self._file_query.grab_focus()
+        self._file_monitor.change_root(self._config.root_path())
+        self._reset_config()
 
     def open_selected_item(self):
         log.error("open_selected_item METHOD NOT DEFINED")

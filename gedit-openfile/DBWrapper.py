@@ -65,7 +65,7 @@ class DBWrapper(Thread):
     def select_on_filename(self, query_input):
         log.info("[DBWrapper] select_on_filename method")
         query_param = query_input.replace(" ", "%")+"%"
-        res = self.select("SELECT DISTINCT name, path FROM files WHERE path LIKE '%s' LIMIT 51", query_param)
+        res = self.select("SELECT DISTINCT name, path FROM files WHERE path LIKE '%s' ORDER BY path LIMIT 51", query_param)
         for row in res:
             yield row
 
@@ -92,6 +92,10 @@ class DBWrapper(Thread):
     def remove_dir(self, path):
         log.debug("[DBWrapper] Remove Dir: " + path)
         self.execute("DELETE FROM files WHERE path like '%s'", (path+"%",))
+    
+    def clear_database(self):
+        log.debug("[DBWrapper] Clearing Databases")
+        self.execute("DELETE FROM files")
 
 if __name__ == '__main__':
     db = DBWrapper()

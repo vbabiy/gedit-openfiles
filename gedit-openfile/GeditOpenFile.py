@@ -15,9 +15,8 @@ class GeditOpenFile(Plugin):
         # Create DB Wrapper and start the thread
         self._db_wrapper = DBWrapper()
         
-        #TODO Get Root from file_browser
-        self._file_monitor = FileMonitor(self._db_wrapper, ".")
         self._config = Config()
+        self._file_monitor = FileMonitor(self._db_wrapper, self._config.root_path(), self._config)
 
     def _get_instance( self, window ):
         return window.get_data( self.DATA_TAG )
@@ -26,7 +25,6 @@ class GeditOpenFile(Plugin):
         window.set_data( self.DATA_TAG, instance )
 
     def activate( self, window ):
-        log.debug("[GeditOpenFile] Activate")
         self._set_instance( window, GeditOpenFileGui(self, window, self._file_monitor, self._config))
 
     def deactivate( self, window ):

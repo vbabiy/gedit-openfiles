@@ -8,6 +8,7 @@ File Monitor Contains
 """
 import os
 import stat
+import re
 from Logger import log
 from pyinotify import WatchManager, Notifier, ThreadedNotifier, EventsCodes, ProcessEvent
 from threading import Thread
@@ -20,9 +21,11 @@ class FileMonitor(object):
     FileMonitor Class keeps track of all files down a tree starting at the root
     """
 
-    def __init__(self, db_wrapper, root):
+    def __init__(self, db_wrapper, root, config):
         self._db_wrapper = db_wrapper
         self._root = os.path.realpath(root)
+        self._walk_thread = None
+        self._config = config
 
         # Add a watch to the root of the dir
         self._watch_manager = WatchManager()
@@ -36,7 +39,7 @@ class FileMonitor(object):
         Starts a WalkDirectoryThread to add the directory
         """
         self._watch_manager.add_watch(path, EVENT_MASK,rec=True)
-        WalkDirectoryThread(self._db_wrapper, path)
+        self._walk_thread = WalkDirectoryThread(self._db_wrapper, path, self._config.get_value("IGNORE_FILE_FILETYPES"))
 
     def add_file(self, path, name):
         self._db_wrapper.add_file(path, name)
@@ -51,6 +54,19 @@ class FileMonitor(object):
         if name.find("%") > -1:
             return False
         return True 
+
+    def set_root_path(self, root):
+        self._root = root
+
+    def change_root(self,root):
+        if self._root != root:
+            self._root = root
+            self._db_wrapper.clear_database()
+            self.add_dir(self._root)    
+        
+    def refresh_database(self):
+        self._db_wrapper.clear_database()
+        self.add_dir(self._root)
     
     def search_for_files(self, name):
         res_filewrappers = []
@@ -58,10 +74,6 @@ class FileMonitor(object):
             path_name = self._root + "%" + name
             for row in self._db_wrapper.select_on_filename(path_name):
                 res_filewrappers.append(FileWrapper(name, self._root, row[0], row[1]))
-        
-        #Sort Results
-        res_filewrappers.sort(lambda x, y: cmp(x.path, y.path))
-
         return res_filewrappers
 
 class WalkDirectoryThread(Thread):
@@ -70,25 +82,45 @@ class WalkDirectoryThread(Thread):
     to the database.
     """
 
-    def __init__(self, db_wrapper, root):
+    def __init__(self, db_wrapper, root, ignore_list):
         log.debug("[FileMonitor] WalkDirectoryThread Root: %s" % root)
         Thread.__init__(self)
         self._db_wrapper = db_wrapper
         self._root = root
+        self._ignore_list = ignore_list
         self.start()
 
     def run(self):
         """
         Runs the Thread
         """
+        ignore_res = []
+        # Complie Ignore list in to a list of regexs
+        for ignore in self._ignore_list:
+            ignore = ignore.replace(".", "\.")
+            ignore = ignore.replace("*", ".*")
+            ignore = "^"+ignore+"$"
+            log.debug("Ignore Regex = %s" % ignore )
+            ignore_res.append(re.compile(ignore))
+        log.debug("[WalkDirectoryThread] : ignore_res = %s" % ignore_res)
+        
         if os.path.isdir(self._root):
-            for (path, names) in self._walk_file_system(self._root):
+            for (path, names) in self._walk_file_system(self._root, ignore_res):
                 for name in names:
+                    # Check to make sure the file not in the ignore list
+                    ignore = False
+                    for ignore_re in ignore_res:
+                        if ignore_re.match(name):
+                            log.debug("Ignored %s", name)
+                            ignore = True
+                            break;
+                    if ignore:
+                        continue
                     # Check to see if it is a dir
                     if not os.path.isdir(os.path.join(path,name)):
                         self._db_wrapper.add_file(path, name)
 
-    def _walk_file_system(self, root):
+    def _walk_file_system(self, root, ignore_regexs):
         """
         From a give root of a tree this method will walk through ever branch
         and return a generator.
@@ -99,10 +131,18 @@ class WalkDirectoryThread(Thread):
                 file_stat = os.lstat(os.path.join(root, name))
             except os.error:
                 continue
-
+            
             if stat.S_ISDIR(file_stat.st_mode):
+                ignore = False
+                for ignore_re in ignore_regexs:
+                    if ignore_re.match(name):
+                        log.debug("Ignored %s", name)
+                        ignore = True
+                        break;
+                if ignore:
+                    continue
                 for (newroot, children) in self._walk_file_system(
-                    os.path.join(root, name)):
+                    os.path.join(root, name), ignore_regexs):
                     yield newroot, children
         yield root, names
 

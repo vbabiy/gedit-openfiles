@@ -1,5 +1,6 @@
 from Logger import log
 import os
+import gconf
 
 
 class Config(object):
@@ -12,9 +13,12 @@ class Config(object):
     
     def get_value(self, key):
         if self._config.has_key(key):
+            log.debug("[Config] Getting Value for %s" % key)
             value = self._config[key]
-            if value.isdigit():
-                value = int(value)
+            if value == "True":
+                return True
+            elif value == "False":
+                return False
             return value
         else:
             return None
@@ -35,16 +39,52 @@ class Config(object):
         f.close()
         self._config = {} # reset config
         for line in file_list:
-            name, value = line.split("=")
+            line = line.strip()
+            if len(line) > 0:
+                name, value = line.split("=")
             
-            value = value.strip()
+                value = value.strip()
             
-            value = value.replace("[","")
-            value = value.replace("]","")
-            value = value.replace("'","")
+                value = value.replace("[","")
+                value = value.replace("]","")
+                value = value.replace("'","")
             
-            if value.find(",") > -1:
-                self.set_value(name, [v for v in value.split(',')])
-            else:
-                self.set_value(name, value)
+                if value.find(",") > -1:
+                    self.set_value(name, [v.strip() for v in value.split(',')])
+                else:
+                    self.set_value(name, value)
         log.info("Config Map = %s", self._config)
+        
+    def root_path(self):
+        root = "."
+        if self.get_value("USE_FILEBROWSER"):
+            root = self._get_root_from_filebrowser()
+        else:
+            root = self.get_value("ROOT_PATH")
+        return root
+    
+    def _get_root_from_filebrowser(self):
+        base = u'/apps/gedit-2/plugins/filebrowser/on_load'
+        client = gconf.client_get_default()
+        client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
+        path = os.path.join(base, u'virtual_root')
+        val = client.get(path)
+        if val is not None:
+            #also read hidden files setting
+            base = u'/apps/gedit-2/plugins/filebrowser'
+            client = gconf.client_get_default()
+            client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
+            path = os.path.join(base, u'filter_mode')
+            try:
+                fbfilter = client.get(path).get_string()
+            except AttributeError:
+                fbfilter = "hidden"
+            if fbfilter.find("hidden") == -1:
+                self._show_hidden = True
+            else:
+                self._show_hidden = False
+            
+            #strip file://
+            root = val.get_string().replace("file://", "")
+            return root
+

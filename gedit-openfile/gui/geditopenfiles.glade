@@ -12,7 +12,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <child>
-      <widget class="GtkNotebook" id="notebook1">
+      <widget class="GtkNotebook" id="notebook">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <child>
@@ -179,7 +179,7 @@
                       <widget class="GtkVBox" id="vbox2">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkCheckButton" id="checkbutton1">
+                          <widget class="GtkCheckButton" id="file_browser_checkbox">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="label" translatable="yes">Use File Browser File Root</property>
@@ -193,30 +193,27 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkTable" id="table1">
+                          <widget class="GtkHBox" id="open_root_hbox">
                             <property name="visible">True</property>
-                            <property name="n_columns">2</property>
                             <child>
-                              <widget class="GtkFileChooserButton" id="filechooserbutton1">
+                              <widget class="GtkLabel" id="open_root_label">
                                 <property name="visible">True</property>
-                                <property name="sensitive">False</property>
-                              </widget>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="x_padding">4</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <widget class="GtkLabel" id="label7">
-                                <property name="visible">True</property>
-                                <property name="sensitive">False</property>
-                                <property name="label" translatable="yes">Gedit Open File Root</property>
+                                <property name="label" translatable="yes">Open File Root</property>
                                 <property name="justify">GTK_JUSTIFY_RIGHT</property>
                               </widget>
                               <packing>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="x_padding">22</property>
+                                <property name="expand">False</property>
+                                <property name="padding">5</property>
+                                <property name="position">-1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkFileChooserButton" id="open_root_path">
+                                <property name="visible">True</property>
+                                <property name="preview_widget_active">False</property>
+                              </widget>
+                              <packing>
+                                <property name="position">1</property>
                               </packing>
                             </child>
                           </widget>
@@ -260,12 +257,12 @@
                           <widget class="GtkLabel" id="label9">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes">&lt;i&gt;space separated&lt;/i&gt;</property>
+                            <property name="label" translatable="yes">&lt;i&gt;LIst all files and file types seperated&lt;/i&gt;</property>
                             <property name="use_markup">True</property>
                           </widget>
                         </child>
                         <child>
-                          <widget class="GtkEntry" id="entry1">
+                          <widget class="GtkEntry" id="config_ignore_input">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                           </widget>
@@ -299,7 +296,7 @@
                 <property name="spacing">2</property>
                 <property name="layout_style">GTK_BUTTONBOX_END</property>
                 <child>
-                  <widget class="GtkButton" id="button1">
+                  <widget class="GtkButton" id="config_refresh_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -309,11 +306,11 @@
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkButton" id="button2">
+                  <widget class="GtkButton" id="config_save_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="label" translatable="yes">gtk-ok</property>
+                    <property name="label" translatable="yes">gtk-save</property>
                     <property name="use_stock">True</property>
                     <property name="response_id">0</property>
                   </widget>
@@ -322,7 +319,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkButton" id="cancel_button1">
+                  <widget class="GtkButton" id="config_cancel_button">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="can_default">True</property>

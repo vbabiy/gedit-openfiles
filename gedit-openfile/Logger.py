@@ -2,7 +2,7 @@ import logging
 
 #  Setup
 log = logging.getLogger("GeditOpenFiles")
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.ERROR)
 
 #create console handler and set level to debug
 ch = logging.StreamHandler()
