@@ -40,7 +40,7 @@ class GeditOpenFileGui(object):
 
         #setup buttons
         self._builder.get_object("open_button").connect("clicked",
-            self.open_selected_item)
+            self._open_selected_item)
         self._builder.get_object("cancel_button").connect("clicked",
             lambda a: self._plugin_window.hide())
 
@@ -217,5 +217,5 @@ class GeditOpenFileGui(object):
         self._file_monitor.change_root(self._config.root_path())
         self._reset_config()
 
-    def open_selected_item(self):
+    def _open_selected_item(self, event):
         log.error("open_selected_item METHOD NOT DEFINED")

@@ -29,7 +29,6 @@
                 </child>
                 <child>
                   <object class="GtkHBox" id="spinner_box">
-                    <property name="visible">True</property>
                     <child>
                       <object class="GtkImage" id="spinner">
                         <property name="visible">True</property>

@@ -30,7 +30,6 @@
                 </child>
                 <child>
                   <widget class="GtkHBox" id="spinner_box">
-                    <property name="visible">True</property>
                     <child>
                       <widget class="GtkImage" id="spinner">
                         <property name="visible">True</property>
