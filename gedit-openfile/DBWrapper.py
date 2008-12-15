@@ -29,13 +29,13 @@ class DBWrapper(Thread):
                 log.info("RESULT: " + str(result))
                 cursor = self._db.cursor()
                 cursor.execute(sql)
-                    
+
                 if result:
                     log.info("Putting Results")
                     for row in cursor.fetchall():
                         result.put(row)
                     result.put("__END__")
-                
+
                 self._db.commit()
 
     def execute(self, sql, params=None, result=None):
@@ -57,15 +57,17 @@ class DBWrapper(Thread):
 
         while True:
             row = result.get()
-            if row == '__END__': break
+            if row == '__END__':
+                break
             list_result.append(row)
         log.info("SELECT RESULT COUNT: " + str(len(list_result)))
         return list_result
-    
+
     def select_on_filename(self, query_input):
         log.info("[DBWrapper] select_on_filename method")
         query_param = query_input.replace(" ", "%")+"%"
-        res = self.select("SELECT DISTINCT name, path FROM files WHERE path LIKE '%s' ORDER BY path LIMIT 51", query_param)
+        res = self.select("SELECT DISTINCT name, path FROM files " +
+            "WHERE path LIKE '%s' ORDER BY path LIMIT 51", query_param)
         for row in res:
             yield row
 
@@ -91,8 +93,8 @@ class DBWrapper(Thread):
 
     def remove_dir(self, path):
         log.debug("[DBWrapper] Remove Dir: " + path)
-        self.execute("DELETE FROM files WHERE path like '%s'", (path+"%",))
-    
+        self.execute("DELETE FROM files WHERE path like '%s'", (path+"%", ))
+
     def clear_database(self):
         log.debug("[DBWrapper] Clearing Databases")
         self.execute("DELETE FROM files")
