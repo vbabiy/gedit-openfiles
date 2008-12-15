@@ -38,7 +38,7 @@ class FileMonitor(object):
         """
         Starts a WalkDirectoryThread to add the directory
         """
-        self._watch_manager.add_watch(path, EVENT_MASK,rec=True)
+        self._watch_manager.add_watch(path, EVENT_MASK, rec=True)
         self._walk_thread = WalkDirectoryThread(self._db_wrapper, path, self._config.get_value("IGNORE_FILE_FILETYPES"))
 
     def add_file(self, path, name):
@@ -49,25 +49,25 @@ class FileMonitor(object):
 
     def remove_dir(self, path):
         self._db_wrapper.remove_dir(path)
-    
+
     def _validate_file_query_input(self, name):
         if name.find("%") > -1:
             return False
-        return True 
+        return True
 
     def set_root_path(self, root):
         self._root = root
 
-    def change_root(self,root):
+    def change_root(self, root):
         if self._root != root:
             self._root = root
             self._db_wrapper.clear_database()
-            self.add_dir(self._root)    
-        
+            self.add_dir(self._root)
+
     def refresh_database(self):
         self._db_wrapper.clear_database()
         self.add_dir(self._root)
-    
+
     def search_for_files(self, name):
         res_filewrappers = []
         if self._validate_file_query_input(name):
@@ -75,6 +75,7 @@ class FileMonitor(object):
             for row in self._db_wrapper.select_on_filename(path_name):
                 res_filewrappers.append(FileWrapper(name, self._root, row[0], row[1]))
         return res_filewrappers
+
 
 class WalkDirectoryThread(Thread):
     """
@@ -100,10 +101,10 @@ class WalkDirectoryThread(Thread):
             ignore = ignore.replace(".", "\.")
             ignore = ignore.replace("*", ".*")
             ignore = "^"+ignore+"$"
-            log.debug("Ignore Regex = %s" % ignore )
+            log.debug("Ignore Regex = %s" % ignore)
             ignore_res.append(re.compile(ignore))
         log.debug("[WalkDirectoryThread] : ignore_res = %s" % ignore_res)
-        
+
         if os.path.isdir(self._root):
             for (path, names) in self._walk_file_system(self._root, ignore_res):
                 for name in names:
@@ -113,11 +114,11 @@ class WalkDirectoryThread(Thread):
                         if ignore_re.match(name):
                             log.debug("Ignored %s", name)
                             ignore = True
-                            break;
+                            break
                     if ignore:
                         continue
                     # Check to see if it is a dir
-                    if not os.path.isdir(os.path.join(path,name)):
+                    if not os.path.isdir(os.path.join(path, name)):
                         self._db_wrapper.add_file(path, name)
 
     def _walk_file_system(self, root, ignore_regexs):
@@ -131,14 +132,14 @@ class WalkDirectoryThread(Thread):
                 file_stat = os.lstat(os.path.join(root, name))
             except os.error:
                 continue
-            
+
             if stat.S_ISDIR(file_stat.st_mode):
                 ignore = False
                 for ignore_re in ignore_regexs:
                     if ignore_re.match(name):
                         log.debug("Ignored %s", name)
                         ignore = True
-                        break;
+                        break
                 if ignore:
                     continue
                 for (newroot, children) in self._walk_file_system(
@@ -180,26 +181,28 @@ class FileProcessEvent(ProcessEvent):
         log.info("[FileProcessEvent] MOVED_TO: " + path)
         self.process_IN_CREATE(event)
 
+
 class FileWrapper(object):
+
     def __init__(self, query_input, root, name, path):
         self._path = path
         self._name = name
         self._query_input = query_input
         self._root = root
-    
+
     def _get_path(self):
         return self._path
     path = property(_get_path)
-    
+
     def _get_uri(self):
         uri = "file://" + self._path
         return uri
     uri = property(_get_uri)
-    
+
     def _get_display_path(self):
         return self.highlight_pattern(self.path)
     display_path = property(_get_display_path)
-    
+
     def highlight_pattern(self, path):
         path = path.replace(self._root + "/", "") # Relative path
         log.debug("[FileWrapper] path = " + path)
@@ -215,11 +218,9 @@ class FileWrapper(object):
                 a_path.insert(location, "<b>")
                 a_path.insert(location + len(word) + 1, "</b>")
                 path = "".join(a_path)
-            
+
         log.debug("[FileWrapper] Markup Path = " + path)
         return path
-        
-
 
 if __name__ == '__main__':
     from DBWrapper import DBWrapper
