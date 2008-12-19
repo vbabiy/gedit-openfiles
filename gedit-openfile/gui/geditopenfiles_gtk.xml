@@ -135,34 +135,6 @@
           <object class="GtkVBox" id="vbox1">
             <property name="visible">True</property>
             <child>
-              <object class="GtkFrame" id="frame1">
-                <property name="visible">True</property>
-                <property name="label_xalign">0</property>
-                <property name="shadow_type">GTK_SHADOW_NONE</property>
-                <child>
-                  <object class="GtkAlignment" id="alignment1">
-                    <property name="visible">True</property>
-                    <property name="left_padding">12</property>
-                    <child>
-                      <object class="GtkLabel" id="label6">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Use this configuration panel to setup were Gedit Open File will scan for files.If you check off the &lt;i&gt;Use File Browser File Root&lt;/i&gt; it will use the current directory that the file browser is at. Other wise you will have to specify the path at were gedit open file should start to scan.</property>
-                        <property name="use_markup">True</property>
-                        <property name="wrap">True</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="label5">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Configuration Help&lt;/b&gt;</property>
-                    <property name="use_markup">True</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
               <object class="GtkFrame" id="frame2">
                 <property name="visible">True</property>
                 <property name="label_xalign">0</property>
@@ -175,6 +147,15 @@
                       <object class="GtkVBox" id="vbox2">
                         <property name="visible">True</property>
                         <child>
+                          <object class="GtkLabel" id="label6">
+                            <property name="visible">True</property>
+                            <property name="yalign">0</property>
+                            <property name="label" translatable="yes">Use this configuration panel to setup were the plug-in will scan for files. If you check off the &lt;i&gt;Use File Browser File Root&lt;/i&gt; it will use the current directory that the file browser is at. Other wise you will have to specify the path at were gedit open file should start to scan.</property>
+                            <property name="use_markup">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkCheckButton" id="file_browser_checkbox">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -185,6 +166,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">False</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
@@ -206,6 +188,7 @@
                               <object class="GtkFileChooserButton" id="open_root_path">
                                 <property name="visible">True</property>
                                 <property name="preview_widget_active">False</property>
+                                <property name="local_only">False</property>
                                 <property name="action">GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER</property>
                               </object>
                               <packing>
@@ -215,7 +198,7 @@
                           </object>
                           <packing>
                             <property name="expand">False</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </object>
@@ -231,7 +214,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">1</property>
+                <property name="padding">2</property>
               </packing>
             </child>
             <child>
@@ -250,7 +233,7 @@
                           <object class="GtkLabel" id="label9">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes">&lt;i&gt;LIst all files and file types seperated&lt;/i&gt;</property>
+                            <property name="label" translatable="yes">&lt;i&gt;LIst all files and file types seperated by a comma&lt;/i&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
                         </child>
@@ -276,7 +259,7 @@
                 </child>
               </object>
               <packing>
-                <property name="position">2</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -323,7 +306,7 @@
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="position">3</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
