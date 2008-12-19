@@ -152,7 +152,7 @@ class GeditOpenFileGui(object):
             label="Open File(s)...\t", tooltip="Open a file(s)",
             stock_id=gtk.STOCK_OPEN)
         geditopenfiles_action.connect("activate",
-            lambda a: self.on_geditopen_action())
+            lambda a: self._on_geditopen_action())
         self._action_group.add_action_with_accel(geditopenfiles_action,
             "<Ctrl><Alt>o")
         manager.insert_action_group(self._action_group, 0)
@@ -169,6 +169,11 @@ class GeditOpenFileGui(object):
             log.debug("DOWN WAS PRESSED")
 
     def _on_query_entry(self, widget, event):
+        # Check to see if key pressed is Return if so open first file
+        if event.keyval == gtk.keysyms.Return:
+            self._on_select_from_list(None, event)
+            return
+
         self._clear_treeveiw() # Remove all
 
         input_query = widget.get_text()
@@ -178,6 +183,11 @@ class GeditOpenFileGui(object):
             # Query database based on input
             results = self._file_monitor.search_for_files(input_query)
             self._insert_into_treeview(results)
+
+            # Select the first one on the list
+            iter = self._liststore.get_iter_first()
+            if iter != None:
+                self._file_list.get_selection().select_iter(iter)
 
     def _insert_into_treeview(self, file_list):
         for file in file_list:
@@ -213,9 +223,10 @@ class GeditOpenFileGui(object):
         self._plugin_window.hide()
 
     def _on_list_mouse(self, widget, event):
-        log.error("_on_list_mouse METHOD NOT DEFINED")
+        if event.type == gtk.gdk._2BUTTON_PRESS:
+            self._on_select_from_list(None, event)
 
-    def on_geditopen_action(self):
+    def _on_geditopen_action(self):
         self._plugin_window.show()
         self._notebook.set_current_page(0) # Set back to the search page
         self._file_query.grab_focus()
@@ -223,4 +234,4 @@ class GeditOpenFileGui(object):
         self._reset_config()
 
     def _open_selected_item(self, event):
-        log.error("open_selected_item METHOD NOT DEFINED")
+        self._on_select_from_list(None, event)
