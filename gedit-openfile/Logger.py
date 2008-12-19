@@ -1,12 +1,13 @@
 import logging
 
+LEVEL = logging.ERROR
 #  Setup
 log = logging.getLogger("GeditOpenFiles")
-log.setLevel(logging.ERROR)
+log.setLevel(LEVEL)
 
 #create console handler and set level to debug
 ch = logging.StreamHandler()
-ch.setLevel(logging.ERROR)
+ch.setLevel(LEVEL)
 
 #create formatter
 formatter = logging.Formatter("%(asctime)s - %(name)s -" +

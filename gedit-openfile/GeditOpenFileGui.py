@@ -77,7 +77,11 @@ class GeditOpenFileGui(object):
         self._file_browser_checkbox = self._builder.get_object("file_browser_checkbox")
         self._file_browser_checkbox.connect("toggled", self._file_browser_checkbox_event)
         self._open_root_hbox = self._builder.get_object("open_root_hbox")
+
+        # Setup Callback for root path
         self._open_root_path = self._builder.get_object("open_root_path")
+        self._open_root_path.set_current_folder(self._config.get_value("ROOT_PATH"))
+
         self._config_ignore_input = self._builder.get_object("config_ignore_input")
 
         self._reset_config()
@@ -116,6 +120,8 @@ class GeditOpenFileGui(object):
 
     def _save_config_event(self, event):
         self._config.set_value("USE_FILEBROWSER", self._file_browser_checkbox.get_active())
+        self._config.set_value("ROOT_PATH", self._open_root_path.get_current_folder())
+        
         ignored_list = [s.strip() for s in self._config_ignore_input.get_text().split(",")]
         log.debug("ignored_list = " + str(ignored_list))
         self._config.set_value("IGNORE_FILE_FILETYPES", ignored_list)
@@ -138,7 +144,8 @@ class GeditOpenFileGui(object):
         return True
 
     def update_ui(self):
-        log.error("[GeditOpenFileGui] update_ui METHOD NOT IMPLEMENTED")
+        #log.error("[GeditOpenFileGui] update_ui METHOD NOT IMPLEMENTED")
+        pass
 
     def _insert_menu(self):
         #TODO refactor and reivew code. To make sure its not doing more work then is needed.
