@@ -24,11 +24,14 @@ class DBWrapper(Thread):
         self._create_db()
         while True:
             if not self._queue.empty():
-                sql, result = self._queue.get()
-                log.info("QUERY: %s" % sql)
-                log.info("RESULT: " + str(result))
-                cursor = self._db.cursor()
-                cursor.execute(sql)
+                try:
+                    sql, result = self._queue.get()
+                    log.info("QUERY: %s" % sql)
+                    log.info("RESULT: " + str(result))
+                    cursor = self._db.cursor()
+                    cursor.execute(sql)
+                except sqlite3.OperationalError, e:
+                    log.error("[DBWrapper] OperationalError : %s" % e)
 
                 if result:
                     log.info("Putting Results")
