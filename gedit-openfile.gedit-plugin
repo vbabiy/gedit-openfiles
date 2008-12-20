@@ -1,6 +1,6 @@
 [Gedit Plugin]
 Loader=python
-Module=gedit-openfile
+Module=gedit-openfiles
 IAge=2
 Name=Gedit Open File
 Description=Opens files by search terms

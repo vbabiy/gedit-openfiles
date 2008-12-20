@@ -13,6 +13,7 @@ need the following runtime dependencies:
   * Python 2.4 or later
   * PyGTK 2.10 or later
   * sqlite3
+  * pyinotify
 
 Installation
 ------------
