@@ -4,7 +4,7 @@ Gedit Open Files - Gedit plugin to open files based on a query
 This is a plugin for Gedit that adds support, to search and open files based 
 on the file browser root or a specifed root. 
 
-Dependencxes
+Dependencies
 ------------
 
 Gedit Open Files is written in Python, so doesn't need compiling, however you will
