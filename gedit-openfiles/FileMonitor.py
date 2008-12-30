@@ -9,6 +9,7 @@ File Monitor Contains
 import os
 import stat
 import re
+import urllib
 from Logger import log
 from pyinotify import WatchManager, Notifier, ThreadedNotifier, \
 EventsCodes, ProcessEvent
@@ -128,6 +129,8 @@ class WalkDirectoryThread(Thread):
         """
         if os.path.isdir(self._root):
             for (path, names) in self._walk_file_system(self._root):
+                log.debug("[WalkDirectoryThread] Path: %s" % path)
+                log.debug("[WalkDirectoryThread] Names: %s" % names)
                 for name in names:
                     # Check to see if it is a dir
                     if not os.path.isdir(os.path.join(path, name)):
@@ -210,7 +213,7 @@ class FileWrapper(object):
     path = property(_get_path)
 
     def _get_uri(self):
-        uri = "file://" + self._path
+        uri = "file://" + urllib.quote(self._path)
         return uri
     uri = property(_get_uri)
 
