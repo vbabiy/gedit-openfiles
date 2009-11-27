@@ -13,6 +13,7 @@ import urllib
 from Logger import log
 from pyinotify import WatchManager, Notifier, ThreadedNotifier, EventsCodes, ProcessEvent
 from threading import Thread
+from threadpool import ThreadPool
 from Config import Config
 
 try:
@@ -22,6 +23,9 @@ except AttributeError:
     # Support for pyinotify 0.8.6
     from pyinotify import IN_DELETE, IN_CREATE, IN_MOVED_FROM, IN_MOVED_TO
     EVENT_MASK = IN_DELETE | IN_CREATE | IN_MOVED_TO | IN_MOVED_FROM
+    
+    
+THREAD_POOL_WORKS = 20
 
 
 class FileMonitor(object):
@@ -33,10 +37,11 @@ class FileMonitor(object):
         self._file_count = 0
         self._db_wrapper = db_wrapper
         self._root = os.path.realpath(root)
-        self._walk_thread = None
         self._config = config
         self._ignore_regexs = []
         self._set_ignore_list()
+        
+        self._thread_pool = ThreadPool(THREAD_POOL_WORKS)
 
         # Add a watch to the root of the dir
         self._watch_manager = WatchManager()
@@ -66,10 +71,7 @@ class FileMonitor(object):
         """
         if self.validate(os.path.split(path)[1]):
             self._watch_manager.add_watch(path, EVENT_MASK)
-            try:
-                self._walk_thread = WalkDirectoryThread(self, path)
-            except Exception, e:
-                log.error("Exception: %s", e)
+            self._thread_pool.queueTask(self.walk_directory, path)
 
     def add_file(self, path, name):
         if self.validate(name):
@@ -119,43 +121,23 @@ class FileMonitor(object):
                     row[0], row[1]))
         return res_filewrappers
 
-
-class WalkDirectoryThread(Thread):
-    """
-    Thread that will take a DBWrapper and a root directory and add ever file
-    to the database.
-    """
-
-    def __init__(self, file_monitor, root):
-        log.debug("[FileMonitor] WalkDirectoryThread Root: %s" % root)
-        Thread.__init__(self)
-        self._file_monitor = file_monitor
-        self._root = root
-        self.start()
-
-    def run(self):
-        """
-        Runs the Thread
-        """
-        if os.path.isdir(self._root):
-            self._walk_file_system(self._root)
-
-    def _walk_file_system(self, root):
+    def walk_directory(self, root):
         """
         From a give root of a tree this method will walk through ever branch
         and return a generator.
         """
-        names = os.listdir(root)
-        for name in names:
-            try:
-                file_stat = os.lstat(os.path.join(root, name))
-            except os.error:
-                continue
+        if os.path.isdir(root):
+            names = os.listdir(root)
+            for name in names:
+                try:
+                    file_stat = os.lstat(os.path.join(root, name))
+                except os.error:
+                    continue
 
-            if stat.S_ISDIR(file_stat.st_mode):
-                self._file_monitor.add_dir(os.path.join(root, name))
-            else:
-                self._file_monitor.add_file(root, name)
+                if stat.S_ISDIR(file_stat.st_mode):
+                    self.add_dir(os.path.join(root, name))
+                else:
+                    self.add_file(root, name)
 
 
 class FileProcessEvent(ProcessEvent):
