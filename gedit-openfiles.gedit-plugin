@@ -1,9 +1,8 @@
 [Gedit Plugin]
 Loader=python
-Module=gedit-openfiles
+Module=gedit_openfiles
 IAge=2
 Name=Gedit Open File
 Description=Opens files by search terms
 Authors=Vitaly Babiy <vbabiy86@gmail.com>
-Copyright=Copyright © 2008 Vitaly Babiy <vbabiy86@gmail.com>
-#Website=http://www.vitalysblog.com/flat/gedit-openfiles Not yet active
+Copyright=Copyright © 2009 Vitaly Babiy <vbabiy86@gmail.com>
