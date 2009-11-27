@@ -50,7 +50,7 @@ class FileMonitor(object):
     def _set_ignore_list(self):
         log.info("[FileMonitor] Set Regexs for Ignore List")
 
-        ignore_res = []
+        self._ignore_regexs = []
         # Complie Ignore list in to a list of regexs
         for ignore in self._config.get_value("IGNORE_FILE_FILETYPES"):
             ignore = ignore.strip()
@@ -66,8 +66,10 @@ class FileMonitor(object):
         """
         if self.validate(os.path.split(path)[1]):
             self._watch_manager.add_watch(path, EVENT_MASK)
-            self._walk_thread = WalkDirectoryThread(self, path,
-                self._ignore_regexs)
+            try:
+                self._walk_thread = WalkDirectoryThread(self, path)
+            except Exception, e:
+                log.error("Exception: %s", e)
 
     def add_file(self, path, name):
         if self.validate(name):
@@ -105,6 +107,7 @@ class FileMonitor(object):
 
     def refresh_database(self):
         self._db_wrapper.clear_database()
+        self._set_ignore_list()
         self.add_dir(self._root)
 
     def search_for_files(self, name):
@@ -123,12 +126,11 @@ class WalkDirectoryThread(Thread):
     to the database.
     """
 
-    def __init__(self, file_monitor, root, ignore_regexs):
+    def __init__(self, file_monitor, root):
         log.debug("[FileMonitor] WalkDirectoryThread Root: %s" % root)
         Thread.__init__(self)
         self._file_monitor = file_monitor
         self._root = root
-        self._ignore_regexs = ignore_regexs
         self.start()
 
     def run(self):
