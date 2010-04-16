@@ -31,7 +31,11 @@ class FilesystemSearcher(object):
 
     def root_changed_callback(self, bus, msg):
         previous_root = self._root
-        self._root = msg.uri.replace("file://", "") # FIXME: HACK
+        if hasattr(msg, 'uri'):
+            root = msg.uri
+        else:
+            root = msg.get_value('uri')
+        self._root = root.replace("file://", "") # FIXME: HACK
 
         self._db.destroy_database()
 

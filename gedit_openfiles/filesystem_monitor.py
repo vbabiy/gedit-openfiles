@@ -100,7 +100,9 @@ class FilesystemMonitor(object):
         self._thread_pool.clearTasks()
 
         wd = self.watch_manager.get_wd(previous_root)
-        self.watch_manager.rm_watch(wd, rec=True)
+        if wd:
+          self.watch_manager.rm_watch(wd, rec=True)
+
 
         self.add_directory(self.searcher.current_root)
 
