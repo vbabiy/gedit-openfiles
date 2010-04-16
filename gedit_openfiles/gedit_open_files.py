@@ -22,7 +22,6 @@ class GeditOpenFiles(Plugin):
 
     def deactivate(self, window):
         window.searcher.cleanup()
-        from ipdb import set_trace; set_trace() # Debug
 
     @property
     def configuration(self):
