@@ -20,6 +20,9 @@ class GeditOpenFiles(Plugin):
         # Setup UI for the plugin
         GeditOpenFilesUi(window)
 
+    def deactivate(self, window):
+        window.searcher.cleanup()
+        from ipdb import set_trace; set_trace() # Debug
 
     @property
     def configuration(self):

@@ -171,8 +171,6 @@ class ThreadPoolThread(threading.Thread):
         """ Exit the run loop next time through."""
         
         self.__isDying = True
-        from django.db import connection
-        connection.close()
 
 # Usage example
 if __name__ == "__main__":

@@ -140,6 +140,11 @@ class FilesystemMonitor(object):
                     self.add_directory(os.path.join(root, name))
                 else:
                     self.add_file(root, name)
+    def finish(self):
+        wd = self.watch_manager.get_wd(self.searcher.current_root)
+        self.watch_manager.rm_watch(wd, rec=True)
+        self._thread_pool.joinAll(waitForTasks=False)
+        print "Done"
 
 #    def validate(self, name):
 #         # Check to make sure the file not in the ignore list

@@ -33,6 +33,8 @@ class FilesystemSearcher(object):
         previous_root = self._root
         self._root = msg.uri.replace("file://", "") # FIXME: HACK
 
+        self._db.destroy_database()
+
         if not self._monitor:
             self._monitor = FilesystemMonitor(self)
         self._monitor.change_root(previous_root)
@@ -68,3 +70,8 @@ class FilesystemSearcher(object):
             # FIXME: Set data in variables so you can tell what data is returned.
             filewrappers.append(FileWrapper(input, self.current_root, row[0], row[1]))
         return filewrappers
+
+    def cleanup(self):
+        if self._monitor:
+            self._monitor.finish()
+        self._db.close() # FIXME: Fix db clean up

@@ -28,8 +28,12 @@ class DBWrapper(Thread):
     def run(self):
         self._create_db()
         while True:
+            print "DB running"
             try:
                 sql, params, result = self._queue.get()
+                if sql == '__CLOSE__':
+                    self._db.close()
+                    break
                 log.info("[DBWrapper] QUERY: %s" % sql)
                 log.info("[DBWrapper] PARAMS: %s" % str(params))
                 log.info("[DBWrapper] RESULT: " + str(result))
@@ -48,6 +52,7 @@ class DBWrapper(Thread):
                 result.put("__END__")
 
             self._db.commit()
+        print "DBWrapper is now complete"
 
     def execute(self, sql, params=None, result=None):
         self._queue.put((sql, params, result))
@@ -88,7 +93,7 @@ class DBWrapper(Thread):
         self.execute("DELETE FROM files WHERE path like ?", (path+"%", ))
 
     def close(self):
-        self._queue.put("__CLOSE__")
+        self._queue.put(("__CLOSE__", "__CLOSE__", "__CLOSE__"))
 
     def destroy_database(self):
         log.debug("[DBWrapper] Clearing Databases")
