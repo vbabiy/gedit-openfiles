@@ -1,1 +1,1 @@
-from GeditOpenFile import GeditOpenFile
+from gedit_open_files import GeditOpenFiles

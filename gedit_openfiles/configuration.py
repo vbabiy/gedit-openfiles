@@ -1,10 +1,10 @@
-from Logger import log
+from logger import log
 import os
 import gconf
 import urllib
 
 
-class Config(object):
+class Configuration(object):
 
     def __init__(self):
         self._config = {}
@@ -59,36 +59,3 @@ class Config(object):
                     self.set_value(name, value)
         log.info("[Config] Config Map = %s", self._config)
 
-    def root_path(self):
-        root = "."
-        if self.get_value("USE_FILEBROWSER"):
-            root = self._get_root_from_filebrowser()
-        else:
-            root = self.get_value("ROOT_PATH")
-        log.debug("[Config] ROOT: %s" % root)
-        return urllib.unquote(root)
-
-    def _get_root_from_filebrowser(self):
-        base = u'/apps/gedit-2/plugins/filebrowser/on_load'
-        client = gconf.client_get_default()
-        client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
-        path = os.path.join(base, u'virtual_root')
-        val = client.get(path)
-        if val is not None:
-            #also read hidden files setting
-            base = u'/apps/gedit-2/plugins/filebrowser'
-            client = gconf.client_get_default()
-            client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
-            path = os.path.join(base, u'filter_mode')
-            try:
-                fbfilter = client.get(path).get_string()
-            except AttributeError:
-                fbfilter = "hidden"
-            if fbfilter.find("hidden") == -1:
-                self._show_hidden = True
-            else:
-                self._show_hidden = False
-
-            #strip file://
-            root = val.get_string().replace("file://", "")
-            return root

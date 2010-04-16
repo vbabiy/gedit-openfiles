@@ -78,6 +78,16 @@ class ThreadPool:
         finally:
             self.__taskLock.release()
 
+    def clearTasks(self):
+
+        """ Removes all task that need to be removed. """
+        
+        self.__taskLock.acquire()
+        try:
+            self.__tasks = []
+        finally:
+            self.__taskLock.release()
+
     def getNextTask(self):
 
         """ Retrieve the next task from the task queue.  For use

@@ -4,10 +4,11 @@ some abstractions an multithreading support.
 """
 import os
 import sqlite3
-from Logger import log
+from logger import log
 from threading import Thread
 from Queue import Queue
 
+# Register string handler
 def adapt_str(s):
     return s.decode("iso-8859-1")
 
@@ -64,22 +65,12 @@ class DBWrapper(Thread):
         log.info("[DBWrapper] SELECT RESULT COUNT: " + str(len(list_result)))
         return list_result
 
-    def select_on_filename(self, query_input):
+    def search(self, input):
         log.info("[DBWrapper] select_on_filename method")
-        query_param = query_input.replace(" ", "%")+"%"
-        res = self.select("SELECT DISTINCT name, path FROM files " +
-            "WHERE path LIKE ? ORDER BY path LIMIT 51", (query_param, ))
-        for row in res:
-            yield row
-
-    def close(self):
-        self._queue.put("__CLOSE__")
-
-    def _create_db(self):
-        self._db = sqlite3.connect(":memory:")
-        self.execute("CREATE TABLE files ( id AUTO_INCREMENT PRIMARY KEY, " +
-            "path VARCHAR(255), name VARCHAR(255), " +
-            "open_count INTEGER DEFAULT 0)")
+        params = input.replace(" ", "%")+"%"
+        result = self.select("SELECT DISTINCT name, path FROM files " +
+            "WHERE path LIKE ? ORDER BY path LIMIT 51", (params, ))
+        return result
 
     def add_file(self, path, name):
         path = os.path.join(path, name)
@@ -92,21 +83,26 @@ class DBWrapper(Thread):
         log.debug("[DBWrapper] Removing File: " + path)
         self.execute("DELETE FROM files where path = ?", (path, ))
 
-    def remove_dir(self, path):
-        log.debug("[DBWrapper] Remove Dir: " + path)
+    def remove_directory(self, path):
+        log.debug("[DBWrapper] Remove Directory: " + path)
         self.execute("DELETE FROM files WHERE path like ?", (path+"%", ))
 
-    def clear_database(self):
+    def close(self):
+        self._queue.put("__CLOSE__")
+
+    def destroy_database(self):
         log.debug("[DBWrapper] Clearing Databases")
         self.execute("DELETE FROM files")
 
-    def file_count(self):
+    @property
+    def count(self):
         res = self.select("SELECT COUNT(*) FROM files")
         return res[0][0]
 
-if __name__ == '__main__':
-    db = DBWrapper()
-    db.execute("INSERT INTO files (path, name) VALUES (?, ?)",
-         ("vbabiy", "/home/vbabiy"))
-    print (db.select("SELECT * FROM files"))
+    def _create_db(self):
+        self._db = sqlite3.connect(":memory:")
+        self.execute("CREATE TABLE files ( id AUTO_INCREMENT PRIMARY KEY, " +
+            "path VARCHAR(255), name VARCHAR(255), " +
+            "open_count INTEGER DEFAULT 0)")
+
 
