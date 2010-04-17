@@ -15,7 +15,7 @@ from pyinotify import WatchManager, Notifier, ThreadedNotifier, EventsCodes, Pro
 from threading import Thread
 from threadpool import ThreadPool
 
-THREAD_POOL_WORKS = 2
+THREAD_POOL_WORKS = 4
 
 try:
     # Supports < pyinotify 0.8.6
@@ -82,19 +82,21 @@ class FilesystemMonitor(object):
         self.notifier = ThreadedNotifier(self.watch_manager, FileProcessEvent(self))
         self.notifier.start()
 
+        self._build_exclude_list()
 
-#    def _set_ignore_list(self):
-#        log.info("[FileMonitor] Set Regexs for Ignore List")
 
-#        self._ignore_regexs = []
-#        # Complie Ignore list in to a list of regexs
-#        for ignore in self._config.get_value("IGNORE_FILE_FILETYPES"):
-#            ignore = ignore.strip()
-#            ignore = ignore.replace(".", "\.")
-#            ignore = ignore.replace("*", ".*")
-#            ignore = "^"+ignore+"$"
-#            log.debug("[FileMonitor] Ignore Regex = %s" % ignore)
-#            self._ignore_regexs.append(re.compile(ignore))
+    def _build_exclude_list(self):
+        log.info("[FileMonitor] Set Regexs for Ignore List")
+
+        self._exclude_regexs = []
+        # Complie Ignore list in to a list of regexs
+        for ignore in self.searcher.configuration.get_value("EXCLUDE_LIST"):
+            ignore = ignore.strip()
+            ignore = ignore.replace(".", "\.")
+            ignore = ignore.replace("*", ".*")
+            ignore = "^"+ignore+"$"
+            log.debug("[FileMonitor] Ignore Regex = %s" % ignore)
+            self._exclude_regexs.append(re.compile(ignore))
 
     def change_root(self, previous_root):
         self._thread_pool.clearTasks()
@@ -110,14 +112,16 @@ class FilesystemMonitor(object):
         """
         Starts a WalkDirectoryThread to add the directory
         """
-        self.watch_manager.add_watch(path, EVENT_MASK)
-        self._thread_pool.queueTask(self.walk_directory, path)
+        if self.validate(path):
+            self.watch_manager.add_watch(path, EVENT_MASK)
+            self._thread_pool.queueTask(self.walk_directory, path)
 
     def add_file(self, path, name):
         """
         Add a single file to the databse
         """
-        self.searcher.add_file(path, name)
+        if self.validate(name):
+            self.searcher.add_file(path, name)
 
     def remove_file(self, path, name):
         self.searcher.remove_file(path, name)
@@ -148,28 +152,11 @@ class FilesystemMonitor(object):
         self._thread_pool.joinAll(waitForTasks=False)
         print "Done"
 
-#    def validate(self, name):
-#         # Check to make sure the file not in the ignore list
-#        for ignore_re in self._ignore_regexs:
-#            if ignore_re.match(name):
-#                log.debug("[WalkDirectoryThread] ##### Ignored %s #####", name)
-#                return False
-#        log.debug("[WalkDirectoryThread] # Passed %s", name)
-#        return True
-
-
-    # FIXME: This should be in the view
-    def _validate_file_query_input(self, name):
-        if name.find("%") > -1:
-            return False
+    def validate(self, name):
+         # Check to make sure the file not in the ignore list
+        for ignore_re in self._exclude_regexs:
+            if ignore_re.match(name):
+                log.debug("[WalkDirectoryThread] ##### Ignored %s #####", name)
+                return False
+        log.debug("[WalkDirectoryThread] # Passed %s", name)
         return True
-
-#    def refresh_database(self):
-#        self._db_wrapper.clear_database()
-#        self._set_ignore_list()
-#        self.add_dir(self._root)
-
-
-
-
-

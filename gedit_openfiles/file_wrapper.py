@@ -13,18 +13,18 @@ class FileWrapper(object):
         self._query_input = query_input
         self._root = root
 
-    def _get_path(self):
+    @property
+    def path(self):
         return self._path
-    path = property(_get_path)
 
-    def _get_uri(self):
+    @property
+    def uri(self):
         uri = "file://" + urllib.quote(self._path)
         return uri
-    uri = property(_get_uri)
 
-    def _get_display_path(self):
+    @property
+    def display_path(self):
         return self.highlight_pattern(self.path)
-    display_path = property(_get_display_path)
 
     def highlight_pattern(self, path):
         path = path.replace(self._root + "/", "") # Relative path
