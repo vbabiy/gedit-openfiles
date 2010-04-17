@@ -74,6 +74,9 @@ class FilesystemSearcher(object):
     def remove_file(self, path, name):
         self._db.remove_file(path, name)
 
+    def increment_uri_open_count(self, uri):
+        self._db.increment_file_open_count(uri.replace("file://", ""))
+
     def clear_database(self):
         self._db.clear_database()
 

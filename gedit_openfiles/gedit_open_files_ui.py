@@ -204,6 +204,7 @@ class GeditOpenFilesUi(object):
         tab = self._window.get_tab_from_uri(uri)
         if not tab:
             # if not createa tab.
+            self.searcher.increment_uri_open_count(uri)
             tab = self._window.create_tab_from_uri(uri, self._encoding, 0,
                 False, False)
         self._window.set_active_tab(tab)

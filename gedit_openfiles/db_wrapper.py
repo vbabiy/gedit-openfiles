@@ -72,7 +72,7 @@ class DBWrapper(Thread):
         log.info("[DBWrapper] select_on_filename method")
         params = input.replace(" ", "%")+"%"
         result = self.select("SELECT DISTINCT name, path FROM files " +
-            "WHERE path LIKE ? ORDER BY path LIMIT 20", (params, ))
+            "WHERE path LIKE ? ORDER BY open_count DESC, path ASC LIMIT 20", (params, ))
         return result
 
     def add_file(self, path, name):
@@ -89,6 +89,10 @@ class DBWrapper(Thread):
     def remove_directory(self, path):
         log.debug("[DBWrapper] Remove Directory: " + path)
         self.execute("DELETE FROM files WHERE path like ?", (path+"%", ))
+
+    def increment_file_open_count(self, path):
+        log.debug("[DBWrapper] increment_file_open_count: " + path)
+        self.execute("UPDATE files SET open_count =(open_count + 1) WHERE path = ?", (path, ))
 
     def close(self):
         self._queue.put(("__CLOSE__", "__CLOSE__", "__CLOSE__"))
