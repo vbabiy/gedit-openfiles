@@ -109,8 +109,8 @@ class GeditOpenFilesUi(object):
             self._file_browser_checkbox.set_active(True)
         else:
             self._file_browser_checkbox.set_active(False)
-        log.debug("[GeditOpenFileGui] IGNORE_FILE_FILETYPES = " + str(self.searcher.configuration.get_value("IGNORE_FILE_FILETYPES")))
-        self._config_ignore_input.set_text(", ".join(self.searcher.configuration.get_value("IGNORE_FILE_FILETYPES")))
+        log.debug("[GeditOpenFileGui] EXCLUDE_LIST = " + str(self.searcher.configuration.get_value("")))
+        self._config_ignore_input.set_text(", ".join(self.searcher.configuration.get_value("EXCLUDE_LIST")))
 
     def _cancel_config_event(self, event):
         self._reset_config()
@@ -123,7 +123,7 @@ class GeditOpenFilesUi(object):
 
         ignored_list = [s.strip() for s in self._config_ignore_input.get_text().split(",")]
         log.debug("[GeditOpenFileGui] ignored_list = " + str(ignored_list))
-        self.searcher.configuration.set_value("IGNORE_FILE_FILETYPES", ignored_list)
+        self.searcher.configuration.set_value("EXCLUDE_LIST", ignored_list)
         self._file_monitor.set_root_path(self.searcher.configuration.root_path())
         self._file_monitor.refresh_database()
         self._plugin_window.hide()

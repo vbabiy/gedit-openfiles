@@ -28,7 +28,6 @@ class DBWrapper(Thread):
     def run(self):
         self._create_db()
         while True:
-            print "DB running"
             try:
                 sql, params, result = self._queue.get()
                 if sql == '__CLOSE__':
@@ -52,7 +51,6 @@ class DBWrapper(Thread):
                 result.put("__END__")
 
             self._db.commit()
-        print "DBWrapper is now complete"
 
     def execute(self, sql, params=None, result=None):
         self._queue.put((sql, params, result))
