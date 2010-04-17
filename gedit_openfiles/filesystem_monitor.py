@@ -151,6 +151,7 @@ class FilesystemMonitor(object):
     def finish(self):
         wd = self.watch_manager.get_wd(self.searcher.current_root)
         self.watch_manager.rm_watch(wd, rec=True)
+        self.notifier.stop()
         self._thread_pool.joinAll(waitForTasks=False)
 
     def validate(self, name):
