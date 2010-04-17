@@ -72,7 +72,7 @@ class DBWrapper(Thread):
         log.info("[DBWrapper] select_on_filename method")
         params = input.replace(" ", "%")+"%"
         result = self.select("SELECT DISTINCT name, path FROM files " +
-            "WHERE path LIKE ? ORDER BY path LIMIT 51", (params, ))
+            "WHERE path LIKE ? ORDER BY path LIMIT 20", (params, ))
         return result
 
     def add_file(self, path, name):
@@ -93,7 +93,7 @@ class DBWrapper(Thread):
     def close(self):
         self._queue.put(("__CLOSE__", "__CLOSE__", "__CLOSE__"))
 
-    def destroy_database(self):
+    def clear_database(self):
         log.debug("[DBWrapper] Clearing Databases")
         self.execute("DELETE FROM files")
 

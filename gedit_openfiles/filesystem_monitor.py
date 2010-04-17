@@ -105,14 +105,15 @@ class FilesystemMonitor(object):
         if wd:
           self.watch_manager.rm_watch(wd, rec=True)
 
-
+        self.searcher.clear_database()
         self.add_directory(self.searcher.current_root)
 
     def add_directory(self, path):
         """
         Starts a WalkDirectoryThread to add the directory
         """
-        if self.validate(path):
+        basename = os.path.basename(path)
+        if self.validate(basename):
             self.watch_manager.add_watch(path, EVENT_MASK)
             self._thread_pool.queueTask(self.walk_directory, path)
 
@@ -145,12 +146,12 @@ class FilesystemMonitor(object):
                 if stat.S_ISDIR(file_stat.st_mode):
                     self.add_directory(os.path.join(root, name))
                 else:
-                    self.add_file(root, name)
+                    if not stat.S_ISLNK(file_stat.st_mode):
+                        self.add_file(root, name)
     def finish(self):
         wd = self.watch_manager.get_wd(self.searcher.current_root)
         self.watch_manager.rm_watch(wd, rec=True)
         self._thread_pool.joinAll(waitForTasks=False)
-        print "Done"
 
     def validate(self, name):
          # Check to make sure the file not in the ignore list

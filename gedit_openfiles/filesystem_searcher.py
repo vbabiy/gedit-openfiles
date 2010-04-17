@@ -3,6 +3,7 @@ import urllib
 from db_wrapper import DBWrapper
 from filesystem_monitor import FilesystemMonitor
 from file_wrapper import FileWrapper
+from logger import log
 
 
 class FilesystemSearcher(object):
@@ -27,21 +28,23 @@ class FilesystemSearcher(object):
         self._db = DBWrapper()
         self._monitor = None
 
-        self._message_bus.connect('/plugins/filebrowser', 'root_changed', self.root_changed_callback)
+        self._message_bus.connect('/plugins/filebrowser', 'root_changed', self.root_changed)
 
-    def root_changed_callback(self, bus, msg):
+    def root_changed(self, *args, **kwargs):
+        root = kwargs.get('root', None)
         previous_root = self._root
-        if hasattr(msg, 'uri'):
-            root = msg.uri
-        else:
-            root = msg.get_value('uri')
-        self._root = root.replace("file://", "") # FIXME: HACK
 
-        self._db.destroy_database()
+        if not root:
+            if len(args) == 2:
+                msg = args[1]
+                root = self._get_uri_from_msg(msg)
+        self._root = root.replace("file://", "") # FIXME: HACK
 
         if not self._monitor:
             self._monitor = FilesystemMonitor(self)
         self._monitor.change_root(previous_root)
+
+        log.debug("changing root from %s -> %s" % (previous_root, self._root))
         
 
     @property
@@ -53,6 +56,10 @@ class FilesystemSearcher(object):
             return urllib.unquote(self._root)
         else:
             return urllib.unquote(self.configuration.get_value('STATIC_ROOT_PATH'))
+
+    @property
+    def filebrowser_current_root(self):
+        return self._get_uri_from_msg(self._message_bus.send_sync('/plugins/filebrowser', 'get_root'))
 
     @property
     def configuration(self):
@@ -67,6 +74,12 @@ class FilesystemSearcher(object):
     def remove_file(self, path, name):
         self._db.remove_file(path, name)
 
+    def clear_database(self):
+        self._db.clear_database()
+
+    def build_exclude_list(self):
+        self._monitor._build_exclude_list()
+
     def search(self, input):
         query = self.current_root + "%" + input
         filewrappers = []
@@ -79,3 +92,9 @@ class FilesystemSearcher(object):
         if self._monitor:
             self._monitor.finish()
         self._db.close() # FIXME: Fix db clean up
+
+    def _get_uri_from_msg(self, msg):
+        if hasattr(msg, 'uri'):
+            return msg.uri
+        else:
+            return msg.get_value('uri')

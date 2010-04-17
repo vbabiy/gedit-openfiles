@@ -101,7 +101,10 @@ class GeditOpenFilesUi(object):
         self._insert_menu()
 
     def _refresh_data(self, event):
-        self._file_monitor.refresh_database()
+        if self.searcher.configuration.get_value("USE_FILEBROWSER"):
+            self.searcher.root_changed(root=self.searcher.filebrowser_current_root)
+        else:
+            self.searcher.root_changed(root=self.searcher.configuration.get_value('STATIC_ROOT_PATH'))
         self._plugin_window.hide()
 
     def _reset_config(self):
@@ -124,9 +127,8 @@ class GeditOpenFilesUi(object):
         ignored_list = [s.strip() for s in self._config_ignore_input.get_text().split(",")]
         log.debug("[GeditOpenFileGui] ignored_list = " + str(ignored_list))
         self.searcher.configuration.set_value("EXCLUDE_LIST", ignored_list)
-        self._file_monitor.set_root_path(self.searcher.configuration.root_path())
-        self._file_monitor.refresh_database()
-        self._plugin_window.hide()
+        self.searcher.build_exclude_list()
+        self._refresh_data(event)
 
     def _file_browser_checkbox_event(self, widget):
         if widget.get_active():
