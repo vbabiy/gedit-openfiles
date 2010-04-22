@@ -42,7 +42,7 @@ class FileProcessEvent(ProcessEvent):
         
         if self.is_dir(event):
             log.info("[FileProcessEvent] CREATED DIRECTORY: " + path)
-            self._file_monitor.add_dir(path)
+            self._file_monitor.add_directory(path)
         else:
             log.info("[FileProcessEvent] CREATED FILE: " + path)
             self._file_monitor.add_file(event.path, event.name)
@@ -51,7 +51,7 @@ class FileProcessEvent(ProcessEvent):
         path = os.path.join(event.path, event.name)
         if self.is_dir(event):
             log.info("[FileProcessEvent] DELETED DIRECTORY: " + path)
-            self._file_monitor.remove_dir(path)
+            self._file_monitor.remove_directory(path)
         else:
             log.info("[FileProcessEvent] DELETED FILE: " + path)
             self._file_monitor.remove_file(event.path, event.name)
@@ -127,8 +127,8 @@ class FilesystemMonitor(object):
     def remove_file(self, path, name):
         self.searcher.remove_file(path, name)
 
-    def remove_dir(self, path):
-        self.searcher.remove_dir(path)
+    def remove_directoryself, path):
+        self.searcher.remove_directorypath)
 
     def walk_directory(self, root):
         """
