@@ -127,8 +127,8 @@ class FilesystemMonitor(object):
     def remove_file(self, path, name):
         self.searcher.remove_file(path, name)
 
-    def remove_directoryself, path):
-        self.searcher.remove_directorypath)
+    def remove_directory(self, path):
+        self.searcher.remove_directory(path)
 
     def walk_directory(self, root):
         """
