@@ -200,26 +200,7 @@ class GeditOpenFilesUi(object):
 
     def _open_file(self, uri):
         log.debug("[GeditOpenFileGui] uri to open : %s" % uri)
-        # Check to make sure file is not allready opened
-        tab = self._window.get_tab_from_uri(uri)
-        if not tab:
-            # reuse the first document is empty and untouched
-            documents = self._window.get_documents()
-            if len(documents):
-                first_document = documents[0]
-                if first_document.is_untitled() and first_document.is_untouched():
-                    first_document.load(uri, self._encoding, 0, False)
-                    tab = gedit.tab_get_from_document(first_document)
-
-            # create the tab otherwise
-            if not tab:
-                tab = self._window.create_tab_from_uri(uri, self._encoding, 0,
-                    False, False)
-
-            # increase the usage count
-            self.searcher.increment_uri_open_count(uri)
-
-        self._window.set_active_tab(tab)
+        gedit.commands.load_uri(self._window, uri, self._encoding)
 
     def _foreach(self, model, path, iter, selected):
         """
