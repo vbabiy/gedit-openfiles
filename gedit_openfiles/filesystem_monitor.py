@@ -15,7 +15,7 @@ from pyinotify import WatchManager, Notifier, ThreadedNotifier, EventsCodes, Pro
 from threading import Thread
 from threadpool import ThreadPool
 
-THREAD_POOL_WORKS = 4
+THREAD_POOL_WORKS = 2
 
 try:
     # Supports < pyinotify 0.8.6

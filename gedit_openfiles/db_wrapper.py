@@ -7,6 +7,7 @@ import sqlite3
 from logger import log
 from threading import Thread
 from Queue import Queue
+from time import time
 
 # Register string handler
 def adapt_str(s):
@@ -56,6 +57,7 @@ class DBWrapper(Thread):
         self._queue.put((sql, params, result))
 
     def select(self, sql, params=None):
+        t = time()
         list_result = []
         result = Queue()
         self.execute(sql, params, result=result)
@@ -66,13 +68,14 @@ class DBWrapper(Thread):
                 break
             list_result.append(row)
         log.info("[DBWrapper] SELECT RESULT COUNT: " + str(len(list_result)))
+        log.info("[DBWrapper] total time: %s", time() - t)
         return list_result
 
     def search(self, input):
         log.info("[DBWrapper] select_on_filename method")
         params = input.replace(" ", "%")+"%"
         result = self.select("SELECT DISTINCT name, path, length(path) as path_length, open_count FROM files " +
-            "WHERE path LIKE ? ORDER BY open_count DESC, path_length, path ASC LIMIT 20", (params, ))
+            "WHERE path LIKE ? ORDER BY open_count DESC, path_length, path ASC LIMIT 10", (params, ))
         return result
 
     def add_file(self, path, name):
