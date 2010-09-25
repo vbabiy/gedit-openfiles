@@ -71,8 +71,8 @@ class DBWrapper(Thread):
     def search(self, input):
         log.info("[DBWrapper] select_on_filename method")
         params = input.replace(" ", "%")+"%"
-        result = self.select("SELECT DISTINCT name, path, length(path) as path_length FROM files " +
-            "WHERE path LIKE ? ORDER BY path_length, open_count DESC, path ASC LIMIT 20", (params, ))
+        result = self.select("SELECT DISTINCT name, path, length(path) as path_length, open_count FROM files " +
+            "WHERE path LIKE ? ORDER BY open_count DESC, path_length, path ASC LIMIT 20", (params, ))
         return result
 
     def add_file(self, path, name):

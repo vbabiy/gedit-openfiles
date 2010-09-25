@@ -1,9 +1,10 @@
 import gtk
 import os
-from logger import log
 import gedit
 import urllib
+import gio
 
+from logger import log
 menu_str="""
 <ui>
     <menubar name="MenuBar">
@@ -26,7 +27,7 @@ class GeditOpenFilesUi(object):
         # Get Builder and get xml file
         self._builder = gtk.Builder()
         self._builder.add_from_file(os.path.join(os.path.dirname(__file__),
-             "gui", "geditopenfiles_gtk.xml"))
+             "gui", "geditopenfiles.glade"))
 
         #setup window
         self._plugin_window = self._builder.get_object("gedit_openfiles_window")
@@ -55,14 +56,24 @@ class GeditOpenFilesUi(object):
         self._file_list.connect("button_press_event", self._on_list_mouse)
 
         # Setup File TreeView
-        self._liststore = gtk.ListStore(str, str)
+        self._liststore = gtk.ListStore(gtk.gdk.Pixbuf, str, str)
         self._file_list.set_model(self._liststore)
+        
+        # icon Column
+        icon_column = gtk.TreeViewColumn("Icon", gtk.CellRendererPixbuf(), pixbuf=0)
+#        icon_column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
 
+        # type Column
+#        type_column = gtk.TreeViewColumn("Type", gtk.CellRendererText(), markup=1)
+#        type_column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+        
         # Path Column
-        column1 = gtk.TreeViewColumn("Path", gtk.CellRendererText(), markup=0)
-        column1.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
+        path_column = gtk.TreeViewColumn("Path", gtk.CellRendererText(), markup=1)
+        path_column.set_sizing(gtk.TREE_VIEW_COLUMN_AUTOSIZE)
 
-        self._file_list.append_column(column1)
+        self._file_list.append_column(icon_column)
+#        self._file_list.append_column(type_column)
+        self._file_list.append_column(path_column)
         self._file_list.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
 
 #        # Add Animation icon for building data
@@ -192,8 +203,10 @@ class GeditOpenFilesUi(object):
                 self._file_list.get_selection().select_iter(iter)
 
     def _insert_into_treeview(self, file_list):
+        theme = gtk.icon_theme_get_default()
         for file in file_list:
-            self._liststore.append([file.display_path, file.uri])
+            theme_icon = theme.lookup_by_gicon(file.icon, 40, gtk.ICON_LOOKUP_USE_BUILTIN)
+            self._liststore.append([theme_icon and theme_icon.load_icon(), "%s\n<span size='small'>Type: %s, Times Opened: %d</span>" % (file.display_path, file.type, file.open_count), file.uri])
 
     def _clear_treeveiw(self):
         self._liststore.clear()
@@ -201,12 +214,13 @@ class GeditOpenFilesUi(object):
     def _open_file(self, uri):
         log.debug("[GeditOpenFileGui] uri to open : %s" % uri)
         gedit.commands.load_uri(self._window, uri, self._encoding)
+        self.searcher.increment_uri_open_count(uri)
 
     def _foreach(self, model, path, iter, selected):
         """
         Populates selected list
         """
-        selected.append(model.get_value(iter, 1))
+        selected.append(model.get_value(iter, 2))
 
     def _on_select_from_list(self, widget, event):
         # Populate the list of file paths

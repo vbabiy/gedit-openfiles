@@ -75,6 +75,7 @@ class FilesystemSearcher(object):
         self._db.remove_file(path, name)
 
     def increment_uri_open_count(self, uri):
+        log.debug("increment_uri_open_count uri: %s", uri)
         self._db.increment_file_open_count(uri.replace("file://", ""))
 
     def clear_database(self):
@@ -88,7 +89,7 @@ class FilesystemSearcher(object):
         filewrappers = []
         for row in self._db.search(query):
             # FIXME: Set data in variables so you can tell what data is returned.
-            filewrappers.append(FileWrapper(input, self.current_root, row[0], row[1]))
+            filewrappers.append(FileWrapper(input, self.current_root, row[0], row[1], row[3]))
         return filewrappers
 
     def cleanup(self):
