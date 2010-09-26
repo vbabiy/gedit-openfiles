@@ -102,6 +102,8 @@ class DBWrapper(Thread):
 
     def clear_database(self):
         log.debug("[DBWrapper] Clearing Databases")
+        while not self._queue.empty():
+            self._queue.get(False)
         self.execute("DELETE FROM files")
 
     @property
