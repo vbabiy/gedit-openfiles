@@ -42,23 +42,17 @@ class FileWrapper(object):
     @property
     def open_count(self):
         return self._open_count
+    
+    def _highlight_tokens(self, tokens, string):
+        token = tokens.pop(0)
+        start, middle, end = string.partition(token)
+        if end and tokens:
+            end = self._highlight_tokens(tokens, end)
+#        return '%s<span weight="heavy" underline="single">%s</span>%s' % (start, middle, end)
+        return '%s<span weight="heavy">%s</span>%s' % (start, middle, end)
 
     def highlight_pattern(self, path):
-        path = path.replace(self._root + "/", "") # Relative path
-        log.debug("[FileWrapper] path = " + path)
-        query_list = self._query_input.lower().split(" ")
-
-        last_postion = 0
-        for word in query_list:
-            location = path.lower().find(word, last_postion)
-            log.debug("[FileWrapper] Found Postion = " + str(location))
-            if location > -1:
-                last_postion = (location + len(word) + 40)
-                a_path = list(path)
-                a_path.insert(location, '<span weight="heavy" underline="single">')
-                a_path.insert(location + len(word) + 1, "</span>")
-                path = "".join(a_path)
-        
-
-        log.debug("[FileWrapper] Markup Path = " + path)
-        return '%s' % path
+        result = self._highlight_tokens(self._query_input.split(), 
+          path.replace(self._root + "/", ""))
+        log.debug("[FileWrapper] Markup Path = " + result)
+        return result
