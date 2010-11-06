@@ -75,7 +75,7 @@ class DBWrapper(Thread):
         log.info("[DBWrapper] select_on_filename method")
         params = input.replace(" ", "%")+"%"
         result = self.select("SELECT DISTINCT name, path, length(path) as path_length, open_count FROM files " +
-            "WHERE path LIKE ? ORDER BY open_count DESC, path_length, path ASC LIMIT 10", (params, ))
+            "WHERE path LIKE ? ORDER BY path_length, open_count DESC, path ASC LIMIT 10", (params, ))
         return result
 
     def add_file(self, path, name):
@@ -113,8 +113,11 @@ class DBWrapper(Thread):
 
     def _create_db(self):
         self._db = sqlite3.connect(":memory:")
-        self.execute("CREATE TABLE files ( id AUTO_INCREMENT PRIMARY KEY, " +
-            "path VARCHAR(255), name VARCHAR(255), " +
-            "open_count INTEGER DEFAULT 0)")
+        self.execute("""
+          CREATE TABLE files ( id AUTO_INCREMENT PRIMARY KEY,
+            path VARCHAR(255), name VARCHAR(255),
+            open_count INTEGER DEFAULT 0,
+            UNIQUE (path) ON CONFLICT IGNORE);
+        """)
 
 
